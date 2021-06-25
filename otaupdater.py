@@ -1,6 +1,3 @@
-# 1000 x dank aan Evelien die mijn in deze tijden gesteund heeft
-# ohja, en er is ook nog tante suker (Jana Dej.) die graag kinderen wilt maar het zelf nog niet beseft test
-
 import usocket
 import os
 import gc
@@ -32,7 +29,8 @@ class OTAUpdater:
                 pass
         print('network config:', sta_if.ifconfig())
 
-    def check_for_update_to_install_during_next_reboot(self):
+    def check_for_update_to_install_during_next_reboot(self, ssid, password):
+        OTAUpdater.using_network(ssid, password)
         #current_version = '1.1'
         current_version = self.get_version(self.modulepath(self.main_dir))
         latest_version = self.get_latest_version()
@@ -125,11 +123,6 @@ class OTAUpdater:
         string.close()
         return version
     
-#     def get_latest_version(self):
-#         latest_release = self.http_client.get(self.github_repo + '/releases/latest')
-#         version = latest_release.json()['tag_name']
-#         latest_release.close()
-#         return version
 
     def download_all_files(self, root_url, version):
         file_list = self.http_client.get(root_url + '?ref=refs/tags/' + version)
