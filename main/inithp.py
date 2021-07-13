@@ -36,4 +36,3 @@ def start_handshake():
         uart.write(bytearray(j))
         sleep(0.2)
     print("handshake done")
-   
