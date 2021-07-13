@@ -13,8 +13,7 @@ power_state = 'OFF'
 
 
 
-
-#topic_prefix = "varmepumpe"
+#topic_prefix = "heatpump"
 #mqtt_server = '192.168.2.30'
 #client_id ='hpesp32-1'
 
@@ -79,18 +78,7 @@ def sub_cb(topic, msg, retained):
 # mode
     elif topic == topic_sub_mode:
         try:
-            message = msg.decode("utf-8")
-            # mode switched to off, power off unit
-            if (message == "off"):
-                values = hpfuncs.stateControl("OFF")
-            else:
-                if power_state != 'ON':
-                    # unit is OFF and some other mode was selected
-                    values = hpfuncs.stateControl("ON")
-                    values = values + hpfuncs.modeControl(msg)
-                else:
-                    # changed mode of running A/C
-                    values = hpfuncs.modeControl(msg)
+            values = hpfuncs.modeControl(msg)
             if values == False:
                 runwrite = False
         except Exception as e:
@@ -116,6 +104,7 @@ def sub_cb(topic, msg, retained):
             sleep(0.2)
         hpfuncs.logprint("initial read done")
         runwrite = False
+
 ################################################
 # do watchdog
     elif topic == topic_sub_watchdog:
@@ -153,7 +142,7 @@ async def conn_han(client):
     for i in topics:
         await client.subscribe(i,1)
         
-# first run to collect values
+# first run to collect values and run watchdog
 async def firstrun(client):
     firstrun = False
     await asyncio.sleep(10)
@@ -168,6 +157,7 @@ async def firstrun(client):
 
 async def receiver(client):
     global power_state
+    
     sreader = asyncio.StreamReader(uart)
     try:
         while True:
@@ -236,7 +226,8 @@ async def receiver(client):
                             await client.publish(config['maintopic'] + '/mode/state', reportedState, qos=1) 
                         if(str(data[12]) == "190"):
                             outdoortemp = int_to_signed(int(data[13]))
-                            await client.publish(config['maintopic'] + '/outdoortemp', str(outdoortemp), qos=1)     
+                            await client.publish(config['maintopic'] + '/outdoortemp', str(outdoortemp), qos=1)
+     
     except Exception as e:
         hpfuncs.logprint(e)
 
@@ -256,5 +247,3 @@ loop.create_task(mainloop(client))
 loop.create_task(receiver(client))
 loop.create_task(firstrun(client))
 loop.run_forever()
-
-
