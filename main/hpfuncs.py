@@ -18,7 +18,8 @@ inttoswing = dict(map(reversed, swingtoint.items()))
 statetoint = {"ON":48, "OFF":49}
 inttostate = dict(map(reversed, statetoint.items()))
 
-specialmodetoint =  {"HiPower":1}
+specialmodetoint = {"off":0, "hi-power":1, "eco":3, "silent":2}
+inttospecialmode = dict(map(reversed, specialmodetoint.items()))
 
 def checksum(msg,function):
     numb = 434 - msg - function
@@ -37,19 +38,6 @@ def logprint(msg):
     timestamp = str(t[2]) + "-" + str(t[1]) + "-" + str(t[0]) + " " + str(t[4]) + ":" + str(t[5]) + ":" + str(t[6]) + "." + str(t[7])
     result = str(timestamp) + " -> " + str(msg)
     print(result)
- 
-def specialmodeControl(msg):
-    function_code = 247
-    message = msg.decode("utf-8")
-    try:
-        function_value = specialmodetoint[message]
-        control_code = checksum(function_value,function_code)
-        mylist = (2,0,3,16,0,0,7,1,48,1,0,2,function_code,function_value,control_code)
-        getlist = (2,0,3,16,0,0,6,1,48,1,0,1,function_code,20)
-        myvalues = (mylist, getlist)
-    except Exception as e:
-        myvalues = False
-    return myvalues
  
 
 
@@ -94,6 +82,19 @@ def fanControl(msg):
     return myvalues
 
 
+def specialControl(msg):
+    function_code = 247
+    message = msg.decode("utf-8")
+    try:
+        function_value = specialmodetoint[message]
+        control_code = checksum(function_value,function_code)
+        mylist = (2,0,3,16,0,0,7,1,48,1,0,2,function_code,function_value,control_code)
+        getlist = (2,0,3,16,0,0,6,1,48,1,0,1,function_code,189)
+        myvalues = (mylist, getlist)
+    except Exception as e:
+        myvalues = False
+    return myvalues
+
 
 def stateControl(msg):
     function_code = 128
@@ -136,6 +137,7 @@ def queryall():
      #bootlist.append((2,0,3,16,0,0,6,1,48,1,0,1,134,46))
      bootlist.append((2,0,3,16,0,0,6,1,48,1,0,1,144,36))
      bootlist.append((2,0,3,16,0,0,6,1,48,1,0,1,148,32))
+     bootlist.append((2,0,3,16,0,0,6,1,48,1,0,1,247,189))
      return bootlist    
 
 
